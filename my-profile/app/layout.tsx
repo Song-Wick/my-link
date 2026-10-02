@@ -13,15 +13,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Songsoo (송수) | Vibe Coder & Creator Profile",
-  description: "바이브 코딩으로 가치를 만드는 개발자 송수의 올인원 링크 & 프로필입니다.",
+  title: "송수 (Songsoo) | Vibe Coder & Creator Profile — Neobrutalism Landing",
+  description:
+    "바이브 코딩으로 아이디어를 현실의 가치로 구현하는 직장인 개발자 송수의 Neobrutalism 올인원 링크 & 프로젝트 랜딩 페이지입니다.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

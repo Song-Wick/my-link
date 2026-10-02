@@ -7,10 +7,12 @@ export interface LinkItem {
   id: string;
   name: string;
   url: string;
+  category: "dev" | "blog" | "social" | "contact";
   handle?: string;
   description: string;
-  tag?: string;
-  gradient: string;
+  tag: string;
+  accentColor: string; // e.g. '#ffe600', '#55f993', '#ff66c4', '#38bdf8', '#c084fc', '#ff9f1c'
+  textColor?: string;
   icon: React.ReactNode;
 }
 
@@ -27,7 +29,7 @@ export function LinkCard({ link, onToast }: LinkCardProps) {
     e.stopPropagation();
     navigator.clipboard.writeText(link.url);
     setCopied(true);
-    onToast(`'${link.name}' 링크가 복사되었습니다!`);
+    onToast(`'${link.name}' 주소가 복사되었습니다! 📋`);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -36,55 +38,72 @@ export function LinkCard({ link, onToast }: LinkCardProps) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-zinc-200/90 bg-white/80 p-3.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-purple-300 hover:bg-white hover:shadow-lg dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:hover:border-purple-500/40 dark:hover:bg-zinc-850 cursor-pointer"
+      className="group relative flex flex-col justify-between neo-box bg-white dark:bg-[#1a1d24] p-5 text-black dark:text-white cursor-pointer"
+      style={{
+        borderLeftWidth: "6px",
+        borderLeftColor: link.accentColor,
+      }}
     >
-      {/* Accent glow on hover */}
-      <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-cyan-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
-
-      {/* Icon with gradient badge */}
-      <div
-        className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm transition-transform duration-300 group-hover:scale-110 ${link.gradient}`}
-      >
-        {link.icon}
-      </div>
-
-      {/* Text Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate">
-            {link.name}
+      <div>
+        {/* Top Header: Tag & Copy Button */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span
+            className="neo-badge px-2 py-0.5 text-[10px] text-black"
+            style={{ backgroundColor: link.accentColor }}
+          >
+            {link.tag}
           </span>
-          {link.tag && (
-            <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-600 ring-1 ring-purple-500/20 dark:bg-purple-950/40 dark:text-purple-300">
-              {link.tag}
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleCopy}
+              className="flex h-7 w-7 items-center justify-center border-2 border-black bg-white dark:bg-zinc-800 text-black dark:text-white hover:bg-[#ffe600] dark:hover:bg-[#ffe600] dark:hover:text-black transition-colors"
+              title="링크 주소 복사"
+              aria-label="링크 복사"
+            >
+              {copied ? (
+                <CheckIcon size={14} className="text-emerald-600" />
+              ) : (
+                <CopyIcon size={13} />
+              )}
+            </button>
+
+            <span className="flex h-7 w-7 items-center justify-center border-2 border-black bg-black text-white dark:bg-white dark:text-black group-hover:bg-[#ffe600] group-hover:text-black transition-colors">
+              <ExternalLinkIcon size={13} />
             </span>
-          )}
+          </div>
         </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+
+        {/* Icon & Title */}
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-black text-black shadow-[2px_2px_0px_#000] dark:border-white dark:shadow-[2px_2px_0px_#fff]"
+            style={{ backgroundColor: link.accentColor }}
+          >
+            {link.icon}
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-mono text-lg font-black text-black dark:text-white truncate group-hover:text-[#d946ef] transition-colors">
+              {link.name}
+            </h3>
+            {link.handle && (
+              <span className="font-mono text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                {link.handle}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="mt-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed">
           {link.description}
         </p>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-1">
-        {/* Copy Link Button */}
-        <button
-          onClick={handleCopy}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors"
-          title="링크 복사"
-          aria-label="링크 복사"
-        >
-          {copied ? (
-            <CheckIcon size={14} className="text-emerald-500" />
-          ) : (
-            <CopyIcon size={14} />
-          )}
-        </button>
-
-        {/* External Link Arrow */}
-        <div className="flex h-7 w-7 items-center justify-center text-zinc-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-purple-600 dark:group-hover:text-purple-400">
-          <ExternalLinkIcon size={15} />
-        </div>
+      {/* Card Footer URL preview */}
+      <div className="mt-4 pt-3 border-t-2 border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-[11px] font-mono font-bold text-zinc-400 group-hover:text-black dark:group-hover:text-white transition-colors">
+        <span className="truncate max-w-[200px]">{link.url.replace(/^https?:\/\//, "")}</span>
+        <span className="text-xs group-hover:translate-x-1 transition-transform">→</span>
       </div>
     </a>
   );
