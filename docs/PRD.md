@@ -1,15 +1,17 @@
-# [PRD] 링크트리 클론 서비스 "마이링크 (My-Link)" 기능 정의서
+# [PRD] 개발자·크리에이터를 위한 마이링크 (My-Link) 기능 정의서
 
 ---
 
 | 항목 | 내용 |
 | :--- | :--- |
-| **문서 버전** | v1.0.0 |
-| **작성일** | 2026-10-11 |
+| **문서 버전** | v1.1.0 |
+| **최종 수정일** | 2026-10-11 |
 | **상태** | 확정 (Approved) |
 | **작성자** | 마이링크 기획/개발팀 |
-| **서비스 형태** | 단일 사용자(1인 소유자) 전용 관리자 패널 + 공개 프로필 링크 허브 |
-| **기술 스택** | Next.js (App Router), TypeScript, Supabase / Firebase (BaaS) |
+| **서비스 형태** | 1인 소유자(Owner) 전용 관리자 패널 + 공개 프로필 링크 허브 |
+| **핵심 타겟** | 소프트웨어 엔지니어, 1인 개발자, 테크 크리에이터 |
+| **기술 스택** | Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui |
+| **BaaS / 인프라** | Firebase (Auth - Google OAuth, Cloud Firestore, Cloud Storage) |
 
 ---
 
@@ -17,235 +19,228 @@
 
 ### 1.1 프로젝트명
 - **서비스명**: 마이링크 (My-Link)
-- **영문 표기**: My-Link (Personal Link-in-Bio Platform)
+- **영문 표기**: My-Link (Developer & Creator Link-in-Bio Hub)
 
 ### 1.2 기획 배경 및 목적
-- **배경**: 인스타그램, 유튜브, 깃허브, 블로그 등 크리에이터 및 개발자의 디지털 활동 영역이 다변화되면서 이를 하나의 허브로 집약해 노출할 필요성이 커짐. 기존 글로벌 링크트리(Linktree) 서비스는 유료 플랜 제약, 무거운 번들, 커스터마이징의 한계가 존재함.
+- **배경**: 개발자와 테크 크리에이터는 GitHub, 기술 블로그(Velog, Tistory, Medium), SNS(X/Twitter, LinkedIn, YouTube), 출시한 사이드 프로젝트 등 다양한 디지털 결과물을 보유하고 있으나, 기존 링크트리는 단순 텍스트 링크 위주라 기술 스택이나 프로젝트 쇼케이스를 표현하기에 한계가 있음.
 - **목적**:
-  1. 단 하나의 고유 URL을 통해 개인의 모든 소셜 미디어, 프로젝트, 포트폴리오를 가장 직관적이고 감각적으로 전달.
-  2. 1인 소유자 전용의 심플하고 직관적인 관리자 패널을 제공하여 링크 수정, 순서 변경, 실시간 모바일 프리뷰 지원.
-  3. 링크별 클릭 수 및 일자별 방문자 통계를 수집하여 유입 성과를 시각적으로 분석.
-  4. 가볍고 빠른 성능(Next.js App Router)과 감각적인 테마 커스터마이징 기능 제공.
+  1. **개발자/크리에이터 아이덴티티 특화**: 단순 링크 모음을 넘어 기술 스택 뱃지, 대표 프로젝트(GitHub 소스 / 라이브 데모) 카드를 통합 제공하여 강력한 개인 브랜딩 허브 구축.
+  2. **1인 소유자 중심의 직관적 관리**: Firebase Google 소셜 로그인을 통한 간편 인증과 관리자 이메일 화이트리스트 기반의 안전한 접근 제어.
+  3. **실시간 모바일 라이브 프리뷰**: 관리자 패널에서 콘텐츠를 수정하면 우측 스마트폰 프리뷰에 즉시 반영되는 반응형 편집 경험 제공.
+  4. **shadcn/ui 기반의 모던 디자인 시스템**: 일관성 있고 세련된 UI/UX 및 유연한 테마 커스터마이징 지원.
 
 ### 1.3 대상 사용자 (Target Audience)
-- **주요 타겟 (Owner/관리자)**:
-  - 개인 브랜딩이 필요한 1인 크리에이터, 1인 개발자, 프리랜서, 디자이너.
-  - 본인의 SNS 프로필(인스타그램, X/트위터 등) 소개란에 단 하나의 링크를 게재하고자 하는 사용자.
-- **방문자 (Visitors/End-User)**:
-  - 인스타그램, 블로그, 포트폴리오 링크를 클릭하여 소유자의 콘텐츠 및 프로젝트로 유입되는 일반 대중 및 협업 제안자.
+- **주요 타겟 (소유자 / 관리자)**:
+  - 포트폴리오 및 SNS 링크를 단일 허브로 깔끔하게 정리하고 싶은 개발자 및 테크 크리에이터.
+  - 별도의 복잡한 백엔드 서버 구축 없이 Firebase로 간편하게 자신의 링크 허브를 유지보수하고 싶은 1인 운영자.
+- **방문자 (Visitors / End-User)**:
+  - SNS(X, 인스타그램, 링크드인), 이력서, 이메일 서명 등을 통해 유입되어 소유자의 프로젝트와 활동 내역을 확인하는 리크루터, 협업 제안자, 동료 개발자, 팔로워.
 
 ---
 
 ## 2. 핵심 기능 목록 (Feature Matrix)
 
-기능의 중요도와 개발 단계에 따라 **필수 기능(Must-Have / MVP)**과 **선택·고도화 기능(Nice-to-Have / Phase 2)**으로 구분합니다.
+요구사항에 따라 핵심 기능은 **MVP (Phase 1: 현재 필수 구현)**과 **Phase 2 (추후 고도화 / 선택 구현)**로 명확히 분리합니다.
 
 | 구분 | 기능 ID | 기능명 | 중요도 | 세부 설명 |
 | :--- | :--- | :--- | :---: | :--- |
-| **필수 (Must)** | F-PUB-01 | 공개 프로필 페이지 뷰 | P0 | 프로필 사진, 이름, 소개글, 소셜 아이콘, 링크 카드 렌더링 |
-| **필수 (Must)** | F-PUB-02 | 링크 카드 클릭 및 이동 | P0 | 링크 클릭 시 새 탭으로 대상 URL 이동 및 클릭 이벤트 로깅 |
-| **필수 (Must)** | F-PUB-03 | 모바일 퍼스트 반응형 레이아웃 | P0 | 모바일 최적화 뷰포트 기반 설계 (데스크톱에서는 카드형 센터 정렬) |
-| **필수 (Must)** | F-ADM-01 | 1인 관리자 인증 (로그인/로그아웃) | P0 | 소유자 전용 패스코드/이메일 인증 기반 관리자 페이지 보호 |
-| **필수 (Must)** | F-ADM-02 | 링크 관리 CRUD | P0 | 링크 생성(추가), 조회, 수정, 삭제, 공개/숨김(활성 토글) |
-| **필수 (Must)** | F-ADM-03 | 드래그 앤 드롭(DnD) 순서 재배치 | P0 | 관리자 화면에서 링크 카드 드래그로 손쉬운 노출 순서 변경 |
-| **필수 (Must)** | F-ADM-04 | 실시간 모바일 라이브 프리뷰 | P0 | 관리자 화면 옆에 모바일 기기 형태의 실시간 렌더링 뷰 제공 |
-| **필수 (Must)** | F-THM-01 | 테마 커스터마이징 | P1 | 프리셋 테마(미니멀, 다크 네온, 브루탈리즘 등) 및 배경/버튼 커스텀 |
-| **필수 (Must)** | F-STA-01 | 통계 분석 대시보드 | P1 | 전체 방문자 수(PV), 링크별 클릭 수, 일자별 추이 차트 |
-| **선택 (Nice)** | F-OPT-01 | 공유용 QR 코드 생성 및 다운로드 | P2 | 내 링크 허브 주소의 QR 코드 즉시 생성 및 이미지 다운로드 |
-| **선택 (Nice)** | F-OPT-02 | 미디어 임베드 위젯 | P2 | 유튜브 영상 플레이어, 음악 플레이어 임베드 블록 지원 |
-| **선택 (Nice)** | F-OPT-03 | 일정 예약/만료 링크 설정 | P2 | 특정 날짜/시간에만 노출되거나 자동 종료되는 기간 한정 링크 |
+| **MVP (필수)** | F-PUB-01 | 공개 프로필 헤더 | P0 | 프로필 아바타, 이름, 직무/타이틀, 한 줄 Bio, 소셜 아이콘 바 |
+| **MVP (필수)** | F-PUB-02 | 기술 스택(Tech Stack) 뱃지 블록 | P0 | 프론트/백엔드/도구 등 사용 기술 뱃지 목록 렌더링 |
+| **MVP (필수)** | F-PUB-03 | 대표 프로젝트 쇼케이스 카드 | P0 | 프로젝트 썸네일, 설명, GitHub 링크, Live Demo 버튼 제공 |
+| **MVP (필수)** | F-PUB-04 | 커스텀 링크 카드 목록 | P0 | 블로그, SNS, 아티클 등 주요 링크 목록 및 새 탭 이동 |
+| **MVP (필수)** | F-PUB-05 | 모바일 퍼스트 반응형 뷰 | P0 | 모바일 최적화 레이아웃 및 데스크톱 센터 정렬 뷰포트 |
+| **MVP (필수)** | F-AUTH-01 | Firebase Google 소셜 로그인 | P0 | Google OAuth 전용 원클릭 로그인 |
+| **MVP (필수)** | F-AUTH-02 | 관리자 화이트리스트 접근 제어 | P0 | 환경변수(`ADMIN_EMAIL`)와 일치하는 소유자만 `/admin` 접근 허용 |
+| **MVP (필수)** | F-ADM-01 | 통합 콘텐츠 CRUD 관리 | P0 | 링크, 프로젝트, 기술 스택 항목의 추가·수정·삭제·공개 토글 |
+| **MVP (필수)** | F-ADM-02 | 드래그 앤 드롭(DnD) 순서 재배치 | P0 | 링크 및 프로젝트 카드의 손쉬운 노출 순서 변경 |
+| **MVP (필수)** | F-ADM-03 | 실시간 모바일 라이브 프리뷰 | P0 | 관리자 화면 내 모바일 기기 목업 실시간 렌더링 |
+| **MVP (필수)** | F-THM-01 | shadcn/ui 기반 테마 커스텀 | P1 | 다크/라이트 모드 토글, 테마 프리셋 및 스타일 커스터마이징 |
+| **Phase 2 (선택)** | F-STA-01 | 방문자 및 링크 클릭 통계 (Analytics) | P2 | 일자별 방문자 수(PV), 링크/프로젝트별 클릭 수 대시보드 |
+| **Phase 2 (선택)** | F-OPT-01 | 공유용 QR 코드 생성 및 다운로드 | P2 | 내 링크 허브 주소의 QR 코드 즉시 생성 및 이미지 다운로드 |
+| **Phase 2 (선택)** | F-OPT-02 | 미디어 임베드 위젯 | P2 | 유튜브 영상 플레이어, 음악 플레이어 임베드 블록 |
+| **Phase 2 (선택)** | F-OPT-03 | 일정 예약/만료 링크 설정 | P2 | 특정 날짜/시간에만 노출되거나 자동 종료되는 기간 한정 링크 |
 
 ---
 
 ## 3. 기능별 상세 명세 (Detailed Functional Requirements)
 
-### 3.1 [공개 페이지] 프로필 및 링크 허브 뷰 (`F-PUB-01` ~ `F-PUB-03`)
+### 3.1 [공개 페이지] 개발자·크리에이터 특화 허브 (`F-PUB-01` ~ `F-PUB-05`)
 
-#### (1) 프로필 헤더 섹션
-- **아바타 이미지**: 원형 또는 라운드 사각형 프로필 이미지 (클라우드 스토리지 연동).
-- **이름 / 닉네임**: 강조된 타이포그래피로 표시.
-- **한 줄 소개 (Bio)**: 최대 150자 이내의 자기소개 문구.
-- **소셜 아이콘 바**: 주요 소셜 링크(GitHub, Instagram, YouTube, X, LinkedIn, Email) 아이콘 버튼 횡스크롤/가로 정렬 배치.
+#### (1) 프로필 헤더 (`F-PUB-01`)
+- **컴포넌트 (shadcn/ui)**: `Avatar`, `Badge`
+- **표시 정보**:
+  - 원형 아바타 (Firebase Storage 호스팅 이미지)
+  - 이름 및 전문 직무 타이틀 (예: *“홍길동 | Full-Stack Engineer & Tech Writer”*)
+  - 한 줄 소개 (Bio, 마크다운/이모지 지원)
+  - 소셜 아이콘 바 (GitHub, X/Twitter, LinkedIn, YouTube, 이메일 등 Lucide React 아이콘)
 
-#### (2) 링크 카드 목록 섹션
-- **카드 구성 요소**:
-  - 대표 아이콘/파비콘/이모지 (선택 입력)
-  - 링크 제목 (Title, 필수)
-  - 부가 설명 (Description, 선택)
-  - 뱃지/강조 표시 (예: "NEW", "HOT", "포트폴리오" 등)
-- **인터랙션**:
-  - 카드 마우스 호버/터치 시 부드러운 스케일 업 및 그림자 인터랙션.
-  - 클릭 시 새 탭(`_blank`, `rel="noopener noreferrer"`)으로 안전하게 이동.
-  - 클릭과 동시에 백그라운드로 클릭 수 카운트 API 비동기 호출.
+#### (2) 기술 스택 뱃지 블록 (`F-PUB-02`)
+- **컴포넌트 (shadcn/ui)**: `Badge`
+- **표시 방식**:
+  - 카테고리별(예: Frontend, Backend, DevOps/Tools) 또는 단일 리스트 형태.
+  - 마우스 호버 시 인터랙티브 하이라이트 애니메이션.
 
-#### (3) 하단 푸터 및 공유
-- **공유 버튼**: 페이지 URL 클립보드 원클릭 복사 토스트 팝업 제공.
-- **브랜딩 푸터**: `Powered by My-Link` 문구 (은은한 텍스트 처리).
+#### (3) 대표 프로젝트 쇼케이스 (`F-PUB-03`)
+- **컴포넌트 (shadcn/ui)**: `Card`, `Button`, `Badge`
+- **카드 구성**:
+  - 프로젝트 썸네일 이미지
+  - 프로젝트명 및 한 줄 핵심 설명
+  - 사용 기술 태그 뱃지
+  - 액션 버튼 2종:
+    - `GitHub` (소스 코드 레포지토리 이동)
+    - `Demo / Web` (실제 배포 서비스 이동)
 
----
-
-### 3.2 [관리자] 인증 및 보안 (`F-ADM-01`)
-
-- **접근 제어**:
-  - 관리자 라우트(`/admin`) 접근 시 인증 세션 검증.
-  - 미인증 사용자의 경우 로그인 페이지(`/admin/login`)로 리다이렉트.
-- **인증 방식**:
-  - Supabase/Firebase Auth 기반 1인 관리자 계정 로그인.
-  - JWT 토큰 기반 세션 유지 및 자동 만료 처리.
+#### (4) 커스텀 링크 카드 (`F-PUB-04`)
+- **컴포넌트 (shadcn/ui)**: `Button`, `Card`
+- **구성 요소**: 대표 아이콘/파비콘 + 링크 타이틀 + 서브텍스트 + 뱃지(예: `NEW`, `HOT`, `BLOG`)
+- **인터랙션**: 호버 시 부드러운 엘리베이션 상승 효과, 클릭 시 새 탭 안전 이동(`noopener noreferrer`).
 
 ---
 
-### 3.3 [관리자] 링크 관리 시스템 (`F-ADM-02`, `F-ADM-03`)
-
-#### (1) 링크 항목 속성
-| 필드명 | 데이터 타입 | 필수 여부 | 설명 |
-| :--- | :--- | :---: | :--- |
-| `id` | UUID / String | 필수 | 고유 식별자 |
-| `title` | String (최대 50자) | 필수 | 링크 제목 |
-| `url` | String (URL 포맷) | 필수 | 이동할 타겟 웹 주소 |
-| `description` | String (최대 100자)| 선택 | 링크 부가 설명 |
-| `icon` | String (Icon/Emoji) | 선택 | 루시드 아이콘 명칭 또는 이모지 문자 |
-| `badge_text` | String (최대 10자) | 선택 | 강조 뱃지 문구 (예: "추천", "공구중") |
-| `is_active` | Boolean | 필수 | 노출 활성화 여부 (토글 스위치, 기본 true) |
-| `display_order`| Number | 필수 | 정렬 순서 인덱스 |
-
-#### (2) 드래그 앤 드롭(Drag & Drop) 순서 재배치
-- 마우스 드래그 또는 모바일 롱프레스 터치로 링크 순서 실시간 변경.
-- 순서 변경 완료 시 `display_order` 값이 자동 재계산되어 DB에 일괄 동기화.
-
----
-
-### 3.4 [관리자] 실시간 모바일 라이브 프리뷰 (`F-ADM-04`)
-
-- **화면 분할 구조 (Split View)**:
-  - **좌측 (Editor Pane)**: 링크 추가/수정 폼, 프로필 수정, 테마 설정 탭.
-  - **우측 (Device Preview Pane)**: 스마트폰 외형(iPhone Mockup 스타일)의 실시간 뷰어 고정.
-- **실시간 반응성**:
-  - 좌측에서 링크 텍스트나 테마를 변경하는 즉시 우측 프리뷰에 상태(State)가 무지연 반영.
-  - 관리자가 실제 배포된 공개 페이지와 100% 동일한 비주얼을 확인하면서 작업 가능.
-
----
-
-### 3.5 [테마] 커스터마이징 시스템 (`F-THM-01`)
-
-#### (1) 테마 프리셋 제공
-1. **Clean Minimal**: 순백색 배경, 깔끔한 보더라인, 차분한 모노톤 버튼.
-2. **Neo-Brutalism**: 고대비 볼드 보더(2px black), 강렬한 원색 컬러, 하드 드롭 섀도우.
-3. **Dark Neon**: 딥 다크 배경(#0f172a), 네온 사이언/퍼플 포인트 글로우 효과.
-4. **Soft Pastel / Glassmorphism**: 은은한 그라데이션 및 블러 처리된 반투명 카드.
-
-#### (2) 커스텀 세부 설정
-- 배경 스타일: 단색(Solid Color) / 선형 그라디언트(Linear Gradient).
-- 카드 스타일: 각진 모서리(Square) / 둥근 모서리(Rounded) / 완전 둥근 필(Pill).
-- 그림자 효과: 없음 / 부드러운 소프트 섀도우 / 레트로 하드 섀도우.
-- 서체(Font): Pretendard, Inter, Montserrat 등 폰트 패밀리 선택.
-
----
-
-### 3.6 [통계] 애널리틱스 대시보드 (`F-STA-01`)
-
-- **핵심 지표 카드**:
-  - 총 방문 수(Total Page Views)
-  - 총 링크 클릭 수(Total Link Clicks)
-  - 평균 클릭률(Average CTR = 클릭 수 / 방문 수 * 100)
-- **링크별 클릭 랭킹**:
-  - 어떤 링크가 가장 인기가 많은지 순위별 차트/바 그래프 표시.
-- **일자별 추이 차트**:
-  - 최근 7일 / 30일 기준 일별 방문자 및 클릭 수 꺾은선/막대 그래프.
-
----
-
-## 4. 데이터 모델 설계 (Data Model Overview)
+### 3.2 [인증 & 보안] Firebase Google 소셜 로그인 (`F-AUTH-01`, `F-AUTH-02`)
 
 ```mermaid
-erDiagram
-    PROFILES ||--o{ LINKS : owns
-    PROFILES ||--|| THEME_SETTINGS : configures
-    LINKS ||--o{ CLICK_LOGS : logs
-    PROFILES ||--o{ VISIT_LOGS : tracks
+sequenceDiagram
+    autonumber
+    actor User as 소유자 (Admin)
+    participant Client as Next.js 클라이언트
+    participant FBAuth as Firebase Auth (Google)
+    participant Guard as 관리자 권한 가드
+    participant AdminPage as /admin 대시보드
 
-    PROFILES {
-        uuid id PK
-        string display_name
-        string bio
-        string avatar_url
-        jsonb social_links
-        timestamp updated_at
-    }
+    User->>Client: "Google 계정으로 로그인" 클릭
+    Client->>FBAuth: signInWithPopup(GoogleAuthProvider)
+    FBAuth-->>Client: Firebase User 객체 반환 (email, uid, photoURL)
+    Client->>Guard: 사용자 이메일 vs ADMIN_EMAIL 환경변수 검증
+    alt 이메일 일치 (소유자 승인)
+        Guard-->>AdminPage: 관리자 세션 발급 및 대시보드 진입 허용
+    else 이메일 불일치 (타 사용자)
+        Guard-->>Client: 접근 거부 토스트 표시 및 강제 로그아웃 (signOut)
+    end
+```
 
-    LINKS {
-        uuid id PK
-        uuid profile_id FK
-        string title
-        string url
-        string description
-        string icon
-        string badge_text
-        boolean is_active
-        integer display_order
-        timestamp created_at
-    }
+- **인증 방식**:
+  - Firebase SDK의 `GoogleAuthProvider`를 사용한 팝업/리다이렉트 로그인.
+- **접근 통제 (White-list)**:
+  - 서버 및 클라이언트 환경변수(`NEXT_PUBLIC_ADMIN_EMAIL`)에 지정된 1개의 이메일 주소만 관리자 권한을 획득.
+  - 인가되지 않은 구글 계정으로 로그인 시 즉시 `signOut` 처리 및 “관리자 권한이 없는 계정입니다” 알림 표시.
+- **라우트 보호**:
+  - Next.js 미들웨어 및 클라이언트 Auth Wrapper를 통해 `/admin` 하위 페이지 미인증 접근 차단.
 
-    THEME_SETTINGS {
-        uuid id PK
-        uuid profile_id FK
-        string preset_id
-        string background_type
-        string background_value
-        string card_shape
-        string card_shadow
-        string font_family
-    }
+---
 
-    CLICK_LOGS {
-        uuid id PK
-        uuid link_id FK
-        string referrer
-        string user_agent
-        timestamp clicked_at
-    }
+### 3.3 [관리자 패널] 콘텐츠 관리 & 순서 재배치 (`F-ADM-01`, `F-ADM-02`)
 
-    VISIT_LOGS {
-        uuid id PK
-        uuid profile_id FK
-        string referrer
-        timestamp visited_at
-    }
+- **관리 탭 구조 (shadcn/ui `Tabs`)**:
+  1. **프로필 설정**: 이름, 직무, Bio, 소셜 링크, 아바타 이미지 업로드(Firebase Storage).
+  2. **링크 관리**: 일반 링크 카드 CRUD.
+  3. **프로젝트 관리**: 대표 프로젝트 쇼케이스 카드 CRUD (이미지 업로드, GitHub/Demo URL 설정).
+  4. **기술 스택 관리**: 기술 뱃지 추가 및 카테고리 설정.
+- **드래그 앤 드롭 (DnD) 순서 변경**:
+  - `@dnd-kit` 라이브러리를 활용하여 링크 및 프로젝트 카드의 상하 순서를 직관적으로 드래그하여 재배치.
+  - 드래그 완료 시 `order` 인덱스가 Firestore에 즉시 일괄 갱신.
+- **공개/비공개 토글 (shadcn/ui `Switch`)**:
+  - 작업 중이거나 숨기고 싶은 항목은 원클릭 토글로 공개 페이지에서 즉시 비활성화.
+
+---
+
+### 3.4 [관리자 패널] 실시간 모바일 라이브 프리뷰 (`F-ADM-03`)
+
+- **스플릿 레이아웃 (Split View)**:
+  - **좌측 (Editor Area, 약 60%)**: 폼 입력, 스위치, 드래그 핸들, 액션 버튼 등.
+  - **우측 (Preview Area, 약 40%)**: 모바일 스마트폰 목업 프레임 내에 공개 페이지 실시간 렌더링.
+- **실시간 반응형 동기화**:
+  - React State 기반으로 폼 입력 즉시 프리뷰 목업 화면이 리렌더링되어 결과물을 직관적으로 확인.
+
+---
+
+### 3.5 [디자인 시스템] shadcn/ui 기반 테마 커스텀 (`F-THM-01`)
+
+- **shadcn/ui 컴포넌트 세트 도입**:
+  - `Button`, `Card`, `Badge`, `Avatar`, `Input`, `Textarea`, `Switch`, `Tabs`, `Dialog`, `DropdownMenu`, `Separator`, `Toast (Sonner)`
+- **테마 시스템**:
+  - `next-themes` 기반 라이트 모드 / 다크 모드 지원.
+  - **프리셋 스타일**:
+    - **Modern Minimal (기본)**: 절제된 모노톤, 섬세한 보더, 심플한 뱃지.
+    - **Developer Dark**: 다크 슬레이트 배경, 코드 블록 감성의 폰트 및 액센트 컬러.
+    - **Vibrant Accent**: 선명한 포인트 컬러(인디고/바이올렛)를 적용한 크리에이터 스타일.
+
+---
+
+### 3.6 [Phase 2] 추후 고도화 기능 명세 (`F-STA-01` 외)
+
+- **방문자 및 클릭 통계 (`F-STA-01`)**:
+  - 공개 페이지 조회 시 일별 PV 누적.
+  - 링크 카드 및 프로젝트 GitHub/Demo 버튼 클릭 시 이벤트 카운팅.
+  - 관리자 대시보드 내 간단한 차트(Recharts) 형태로 노출.
+- **QR 코드 다운로드 (`F-OPT-01`)**:
+  - `qrcode.react` 라이브러리를 사용하여 공개 프로필 URL에 대한 고해상도 PNG 다운로드 지원.
+
+---
+
+## 4. 데이터 아키텍처 및 Firestore 컬렉션 설계
+
+Firebase Firestore NoSQL 데이터베이스 구조:
+
+```text
+/config/profile (Document: 1인 프로필 정보)
+  ├── displayName: string
+  ├── title: string
+  ├── bio: string
+  ├── avatarUrl: string
+  ├── socialLinks: { github, twitter, linkedin, youtube, email }
+  └── theme: { mode, presetId, accentColor }
+
+/techStacks/{techId} (Collection: 기술 스택 뱃지)
+  ├── name: string (예: "Next.js", "TypeScript")
+  ├── category: string (예: "Frontend", "Backend")
+  ├── order: number
+  └── isVisible: boolean
+
+/projects/{projectId} (Collection: 대표 프로젝트)
+  ├── title: string
+  ├── description: string
+  ├── thumbnailUrl: string
+  ├── githubUrl: string
+  ├── demoUrl: string
+  ├── tags: string[]
+  ├── order: number
+  └── isVisible: boolean
+
+/links/{linkId} (Collection: 커스텀 링크)
+  ├── title: string
+  ├── url: string
+  ├── description: string
+  ├── icon: string
+  ├── badgeText: string
+  ├── order: number
+  └── isVisible: boolean
 ```
 
 ---
 
 ## 5. 비기능 요구사항 (Non-Functional Requirements)
 
-### 5.1 성능 및 최적화
-- **로딩 속도**: 공개 프로필 페이지의 Lighthouse Performance 점수 90점 이상 목표.
-- **이미지 최적화**: Next.js `<Image />` 컴포넌트 및 WebP/AVIF 포맷 자동 변환을 통해 첫 화면 페이로드를 500KB 이내로 제한.
-- **캐싱 전략**: 공개 프로필 페이지는 ISR(Incremental Static Regeneration) 또는 온디맨드 재검증(On-Demand Revalidation)을 적용하여 고속 응답 보장.
-
-### 5.2 반응형 및 모바일 최적화
-- 모바일(320px~480px), 태블릿(768px), 데스크톱(1024px 이상) 전 해상도 대응.
-- 모바일 환경에서 터치 타겟 영역 최소 44x44px 이상 확보.
-
-### 5.3 SEO 및 소셜 공유 최적화
-- 동적 Open Graph(OG) 메타 태그 생성 (카카오톡, 슬랙, 트위터 공유 시 미리보기 이미지/타이틀 지원).
-- Semantic HTML5 마크업 구조(`main`, `header`, `section`, `nav`).
-
-### 5.4 보안
-- 관리자 API 엔드포인트의 JWT 유효성 철저 검증.
-- 외부 URL 링크 입력 시 `javascript:` 등 악성 스크립트 실행 방지를 위한 URL 스키마 검증(XSS 방지).
+1. **성능 & 로딩 속도**:
+   - Next.js 서버 컴포넌트(RSC)를 활용해 공개 프로필 페이지의 초기 HTML을 즉시 전달.
+   - Core Web Vitals (LCP < 1.2s, CLS < 0.05) 최적화 달성.
+2. **보안 (Security)**:
+   - **Firestore 보안 규칙(Security Rules)**:
+     - `links`, `projects`, `techStacks`, `profile`에 대한 읽기(`read`)는 모든 사용자(`allow read: if true;`)에게 공개.
+     - 쓰기/수정/삭제(`write`)는 오직 인증된 토큰의 이메일이 관리자 화이트리스트 이메일과 일치할 때만 허용(`request.auth.token.email == "owner@gmail.com"`).
+3. **접근성 및 디자인 일관성**:
+   - `shadcn/ui`의 Radix UI 프리미티브를 준수하여 완벽한 키보드 내비게이션 및 ARIA 지원.
+4. **SEO 및 SNS 최적화**:
+   - 동적 Open Graph(OG) 태그를 적용하여 카카오톡, 슬랙, X, 링크드인에 URL 공유 시 매력적인 미리보기 카드 렌더링.
 
 ---
 
-## 6. 향후 산출물 및 연계 계획 (Next Steps)
-
-본 PRD는 후속 문서 작성을 위한 기준서로 활용됩니다.
+## 6. 향후 산출물 및 문서 연계 계획
 
 1. **사용자 시나리오 정의서 (`docs/user-scenarios.md`)**
-   - [시나리오 1] 일반 방문자의 프로필 링크 열람 및 특정 링크 클릭 여정.
-   - [시나리오 2] 소유자의 관리자 로그인, 링크 추가 및 드래그 앤 드롭 순서 변경 여정.
-   - [시나리오 3] 실시간 모바일 프리뷰를 보며 테마를 변경하고 즉시 반영하는 여정.
-   - [시나리오 4] 대시보드에서 링크 클릭 통계를 확인하고 링크를 관리하는 여정.
+   - [시나리오 1] 일반 방문자의 프로필 조회, 기술 스택 확인 및 프로젝트 Demo/GitHub 클릭 여정.
+   - [시나리오 2] 소유자의 Google 원클릭 로그인 및 화이트리스트 인가 여정.
+   - [시나리오 3] 실시간 모바일 프리뷰를 보며 새 프로젝트 추가 및 DnD 순서 변경 여정.
 2. **와이어프레임 설계서 (`docs/wireframes.md`)**
-   - 공개 프로필 페이지 와이어프레임 (모바일 뷰 & 데스크톱 뷰).
-   - 관리자 대시보드 와이어프레임 (스플릿 뷰: 좌측 설정창 + 우측 모바일 라이브 뷰어).
-   - 통계 분석 화면 와이어프레임.
+   - 공개 프로필 페이지 (모바일 뷰 & 데스크톱 뷰, 기술 스택 뱃지 및 프로젝트 쇼케이스 배치).
+   - 관리자 대시보드 (스플릿 레이아웃: 좌측 shadcn 탭 폼 + 우측 모바일 라이브 뷰어).
