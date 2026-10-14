@@ -47,9 +47,9 @@ npm run start
 ## 4. Development Conventions & Rules
 
 ### 4.1 Language, Commit, and File Reference Rules
-1. **Language**: Plans, tasks, code explanations, and agent responses must be written in **English** to optimize token usage.
+1. **Language**: Responses to user questions, explanations, and conversation are written in **Korean** (한국어) per user request, while keeping technical documentation concise to save tokens.
 2. **File Reference**: Always prefix file paths with `@` when referencing them in discussions or documents. (e.g., `@docs/PRD.md`, `@package.json`, `@app/page.tsx`)
-3. **Commit Messages**: Write clear, detailed, and descriptive commit messages in English using standard prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `style:`, etc.).
+3. **Commit Messages**: Write clear, detailed, and descriptive commit messages in English or Korean using standard prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `style:`, etc.).
 4. **Git Staging**: Do NOT use `git add .`. Explicitly stage only changed or newly created files.
 
 ### 4.2 Quality Assurance & Type Safety
