@@ -28,7 +28,7 @@ export interface LinkItem {
 export const links: LinkItem[] = [
   {
     id: "link-1",
-    title: "인스타그램",
+    title: "Instagram",
     url: "https://instagram.com/songshoo",
     faviconUrl: getFaviconUrl("https://instagram.com/songshoo"),
     order: 0,
@@ -37,7 +37,7 @@ export const links: LinkItem[] = [
   },
   {
     id: "link-2",
-    title: "유튜브",
+    title: "YouTube",
     url: "https://youtube.com/@SongsooJKim",
     faviconUrl: getFaviconUrl("https://youtube.com/@SongsooJKim"),
     order: 1,
@@ -46,7 +46,7 @@ export const links: LinkItem[] = [
   },
   {
     id: "link-3",
-    title: "블로그",
+    title: "Blog",
     url: "https://velog.io/@username",
     faviconUrl: getFaviconUrl("https://velog.io/@username"),
     order: 2,
@@ -64,7 +64,7 @@ export const links: LinkItem[] = [
   },
   {
     id: "link-5",
-    title: "포트폴리오",
+    title: "Portfolio",
     url: "https://portfolio.example.com",
     faviconUrl: getFaviconUrl("https://portfolio.example.com"),
     order: 4,
