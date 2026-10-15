@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   GithubLogo,
+  InstagramLogo,
   YoutubeLogo,
   EnvelopeSimple,
   Globe,
@@ -25,12 +26,17 @@ export function ProfileHeader({
   const socialLinks = [
     {
       name: "GitHub",
-      url: "https://github.com",
+      url: "https://github.com/song-wick",
       icon: GithubLogo,
     },
     {
+      name: "Instagram",
+      url: "https://instagram.com/songshoo",
+      icon: InstagramLogo,
+    },
+    {
       name: "YouTube",
-      url: "https://youtube.com",
+      url: "https://youtube.com/@SongsooJKim",
       icon: YoutubeLogo,
     },
     {

@@ -29,8 +29,8 @@ export const links: LinkItem[] = [
   {
     id: "link-1",
     title: "인스타그램",
-    url: "https://instagram.com/username",
-    faviconUrl: getFaviconUrl("https://instagram.com/username"),
+    url: "https://instagram.com/songshoo",
+    faviconUrl: getFaviconUrl("https://instagram.com/songshoo"),
     order: 0,
     isActive: true,
     createdAt: "2026-10-15T00:00:00.000Z",
@@ -38,8 +38,8 @@ export const links: LinkItem[] = [
   {
     id: "link-2",
     title: "유튜브",
-    url: "https://youtube.com/@channel",
-    faviconUrl: getFaviconUrl("https://youtube.com/@channel"),
+    url: "https://youtube.com/@SongsooJKim",
+    faviconUrl: getFaviconUrl("https://youtube.com/@SongsooJKim"),
     order: 1,
     isActive: true,
     createdAt: "2026-10-15T00:01:00.000Z",
@@ -56,8 +56,8 @@ export const links: LinkItem[] = [
   {
     id: "link-4",
     title: "GitHub",
-    url: "https://github.com/username",
-    faviconUrl: getFaviconUrl("https://github.com/username"),
+    url: "https://github.com/song-wick",
+    faviconUrl: getFaviconUrl("https://github.com/song-wick"),
     order: 3,
     isActive: true,
     createdAt: "2026-10-15T00:03:00.000Z",
