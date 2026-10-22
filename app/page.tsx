@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
-import defaultLinks from "@/data/links"
 import { ProfileHeader } from "@/components/profile-header"
-import { LinkList } from "@/components/link-list"
+import { LinkManager } from "@/components/link-manager"
 import { Footer } from "@/components/footer"
 
 export const metadata: Metadata = {
@@ -18,9 +17,9 @@ export default function HomePage() {
         {/* 프로필 헤더 */}
         <ProfileHeader />
 
-        {/* 링크 목록 (세로 나열, shadcn/ui Card 기반, 새 탭 열기) */}
+        {/* 링크 관리 및 목록 (다이얼로그 추가 기능 + 로컬 상태 관리) */}
         <section aria-label="링크 목록" className="w-full">
-          <LinkList items={defaultLinks} />
+          <LinkManager />
         </section>
 
         {/* 하단 푸터 (페이지 공유 및 Powered by) */}
