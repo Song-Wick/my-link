@@ -80,7 +80,10 @@ export function LinkManager() {
   // 로컬 상태 저장
   const saveLinks = (newLinks: LinkItem[]) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks))
+      const raw = JSON.stringify(newLinks)
+      localStorage.setItem(STORAGE_KEY, raw)
+      cachedRaw = raw
+      cachedLinks = [...newLinks]
       emitChange()
     } catch (e) {
       console.error("로컬 스토리지 링크 저장 실패:", e)
@@ -117,12 +120,20 @@ export function LinkManager() {
     }, 3500)
   }
 
-  // 기본 샘플 데이터로 복원
-  const handleReset = () => {
-    if (window.confirm("링크 목록을 기본 예시 데이터로 초기화하시겠습니까?")) {
-      saveLinks(defaultLinks)
-      setSuccessMessage("기본 링크 목록으로 초기화되었습니다.")
+  // 기본 샘플 데이터로 복원 (window.confirm 제거 및 확실한 캐시/스토리지 리셋)
+  const handleReset = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+      cachedRaw = null
+      cachedLinks = [...defaultLinks]
+      emitChange()
+      setSuccessMessage("기본 샘플 링크 목록으로 초기화되었습니다.")
       setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (e) {
+      console.error("로컬 스토리지 초기화 실패:", e)
     }
   }
 

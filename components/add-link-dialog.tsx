@@ -1,6 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import {
   Plus,
   Globe,
@@ -28,7 +31,28 @@ interface AddLinkDialogProps {
   trigger?: React.ReactNode
 }
 
-function formatUrl(rawUrl: string): string {
+// 허용되지 않는 위험한 스킴 목록 (XSS 공격 방지)
+const DISALLOWED_SCHEMES = [
+  "javascript:",
+  "data:",
+  "vbscript:",
+  "file:",
+  "blob:",
+  "about:",
+]
+
+// 표준 도메인 라벨 및 TLD(최소 2자 이상 영문) 검증 정규식
+const DOMAIN_LABEL_REGEX =
+  /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/
+
+// IPv4 주소 검증 정규식
+const IPV4_REGEX =
+  /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+
+/**
+ * URL 프로토콜 보정 헬퍼
+ */
+export function formatUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim()
   if (!trimmed) return ""
   if (!/^https?:\/\//i.test(trimmed)) {
@@ -37,80 +61,172 @@ function formatUrl(rawUrl: string): string {
   return trimmed
 }
 
-function isValidUrl(rawUrl: string): boolean {
-  try {
-    const formatted = formatUrl(rawUrl)
-    const parsed = new URL(formatted)
-    return Boolean(parsed.hostname && parsed.hostname.includes("."))
-  } catch {
-    return false
-  }
-}
+/**
+ * Zod 링크 생성 폼 유효성 검사 스키마
+ */
+export const linkFormSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "링크 제목을 입력해주세요.")
+    .max(50, "제목은 최대 50자까지 입력 가능합니다."),
+  url: z
+    .string()
+    .trim()
+    .min(1, "URL 주소를 입력해주세요.")
+    .superRefine((val, ctx) => {
+      // 1. 공백 포함 검사
+      if (/\s/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "URL 주소에 공백이 포함될 수 없습니다.",
+        })
+        return
+      }
+
+      // 2. 위험 스킴 검사 (XSS 방어)
+      const lower = val.toLowerCase()
+      for (const scheme of DISALLOWED_SCHEMES) {
+        if (lower.startsWith(scheme)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "보안상 http 또는 https 주소만 입력 가능합니다.",
+          })
+          return
+        }
+      }
+
+      // 3. 프로토콜 확인 및 자동 보정 검사
+      const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(val)
+      if (hasScheme && !/^https?:\/\//i.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "보안상 http 또는 https 주소만 입력 가능합니다.",
+        })
+        return
+      }
+
+      // 4. URL 객체 파싱
+      const urlToParse = hasScheme ? val : `https://${val}`
+      let parsed: URL
+      try {
+        parsed = new URL(urlToParse)
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "올바른 URL 형식(예: https://example.com)을 입력해주세요.",
+        })
+        return
+      }
+
+      // 5. 프로토콜 엄격 검사
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "보안상 http 또는 https 주소만 입력 가능합니다.",
+        })
+        return
+      }
+
+      // 6. 도메인 및 호스트네임 형식 검사
+      const hostname = parsed.hostname.toLowerCase()
+      if (hostname.length > 253) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "도메인 이름이 너무 깁니다 (최대 253자).",
+        })
+        return
+      }
+
+      const isDomainValid = DOMAIN_LABEL_REGEX.test(hostname)
+      const isIpValid = IPV4_REGEX.test(hostname)
+
+      if (!isDomainValid && !isIpValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "올바른 도메인 주소(예: naver.com, github.com)를 입력해주세요.",
+        })
+        return
+      }
+
+      // 7. 포트 번호 검사
+      if (parsed.port) {
+        const portNum = Number(parsed.port)
+        if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "올바르지 않은 포트 번호입니다.",
+          })
+          return
+        }
+      }
+    }),
+})
+
+export type LinkFormValues = z.infer<typeof linkFormSchema>
 
 export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
   const [open, setOpen] = React.useState(false)
-  const [title, setTitle] = React.useState("")
-  const [url, setUrl] = React.useState("")
-  const [touched, setTouched] = React.useState({ title: false, url: false })
   const [previewFaviconError, setPreviewFaviconError] = React.useState(false)
 
-  // 폼 초기화
-  const resetForm = React.useCallback(() => {
-    setTitle("")
-    setUrl("")
-    setTouched({ title: false, url: false })
+  // React Hook Form + Zod 설정
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<LinkFormValues>({
+    resolver: zodResolver(linkFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      title: "",
+      url: "",
+    },
+  })
+
+  // 실시간 입력값 구독
+  const watchTitle = watch("title") || ""
+  const watchUrl = watch("url") || ""
+
+  // URL 변경 시 파비콘 에러 상태 리셋
+  React.useEffect(() => {
     setPreviewFaviconError(false)
-  }, [])
+  }, [watchUrl])
+
+  // URL 유효성 및 파비콘 실시간 계산
+  const isUrlValid = Boolean(watchUrl.trim() && !errors.url)
+  const formattedUrl = React.useMemo(() => {
+    return isUrlValid ? formatUrl(watchUrl) : ""
+  }, [isUrlValid, watchUrl])
+
+  const previewFaviconUrl = React.useMemo(() => {
+    if (!isUrlValid || !formattedUrl) return ""
+    return getFaviconUrl(formattedUrl)
+  }, [isUrlValid, formattedUrl])
 
   // 다이얼로그 열림/닫힘 제어
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen)
     if (!nextOpen) {
-      resetForm()
+      reset()
+      setPreviewFaviconError(false)
     }
   }
 
-  // URL 및 파비콘 실시간 계산
-  const formattedUrl = React.useMemo(() => formatUrl(url), [url])
-  const isUrlValid = React.useMemo(() => isValidUrl(url), [url])
-  const previewFaviconUrl = React.useMemo(() => {
-    if (!isUrlValid) return ""
-    return getFaviconUrl(formattedUrl)
-  }, [formattedUrl, isUrlValid])
-
-  // 유효성 에러 메시지
-  const titleError = React.useMemo(() => {
-    if (!touched.title) return null
-    if (!title.trim()) return "링크 제목을 입력해주세요."
-    if (title.length > 50) return "제목은 최대 50자까지 입력 가능합니다."
-    return null
-  }, [title, touched.title])
-
-  const urlError = React.useMemo(() => {
-    if (!touched.url) return null
-    if (!url.trim()) return "URL 주소를 입력해주세요."
-    if (!isUrlValid) return "올바른 URL 형식(예: https://example.com)을 입력해주세요."
-    return null
-  }, [url, isUrlValid, touched.url])
-
-  const isFormValid =
-    title.trim().length > 0 && title.length <= 50 && isUrlValid
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setTouched({ title: true, url: true })
-
-    if (!isFormValid) return
-
+  // 폼 제출 핸들러
+  const onSubmit = (data: LinkFormValues) => {
+    const finalUrl = formatUrl(data.url)
     onAddLink({
-      title: title.trim(),
-      url: formattedUrl,
-      faviconUrl: previewFaviconUrl,
+      title: data.title.trim(),
+      url: finalUrl,
+      faviconUrl: previewFaviconUrl || getFaviconUrl(finalUrl),
       isActive: true,
     })
 
     setOpen(false)
-    resetForm()
+    reset()
+    setPreviewFaviconError(false)
   }
 
   return (
@@ -142,7 +258,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-2 flex flex-col gap-5">
           {/* 1. 링크 제목 입력 */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
@@ -154,27 +270,25 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
                 링크 제목 <span className="text-destructive">*</span>
               </label>
               <span className="text-[11px] text-muted-foreground">
-                {title.length}/50
+                {watchTitle.length}/50
               </span>
             </div>
             <Input
               id="link-title"
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => setTouched((prev) => ({ ...prev, title: true }))}
               placeholder="예: 내 기술 블로그, GitHub, 포트폴리오"
               maxLength={50}
+              autoFocus
               className={cn(
                 "h-10 rounded-xl bg-background/80 px-3 text-sm ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary",
-                titleError && "ring-destructive focus-visible:ring-destructive"
+                errors.title && "ring-destructive focus-visible:ring-destructive"
               )}
-              autoFocus
+              {...register("title")}
             />
-            {titleError && (
+            {errors.title?.message && (
               <p className="flex items-center gap-1 text-[11px] text-destructive">
                 <WarningCircle className="size-3.5 shrink-0" weight="fill" />
-                {titleError}
+                {errors.title.message}
               </p>
             )}
           </div>
@@ -191,22 +305,17 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
             <Input
               id="link-url"
               type="text"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value)
-                setPreviewFaviconError(false)
-              }}
-              onBlur={() => setTouched((prev) => ({ ...prev, url: true }))}
               placeholder="https://velog.io/@username 또는 naver.com"
               className={cn(
                 "h-10 rounded-xl bg-background/80 px-3 text-sm ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary",
-                urlError && "ring-destructive focus-visible:ring-destructive"
+                errors.url && "ring-destructive focus-visible:ring-destructive"
               )}
+              {...register("url")}
             />
-            {urlError && (
+            {errors.url?.message && (
               <p className="flex items-center gap-1 text-[11px] text-destructive">
                 <WarningCircle className="size-3.5 shrink-0" weight="fill" />
-                {urlError}
+                {errors.url.message}
               </p>
             )}
           </div>
@@ -247,10 +356,12 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
                 {/* Title & Hostname */}
                 <div className="flex min-w-0 flex-col text-left">
                   <span className="truncate text-sm font-medium text-foreground">
-                    {title.trim() || "링크 제목이 표시됩니다"}
+                    {watchTitle.trim() || "링크 제목이 표시됩니다"}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {isUrlValid ? formattedUrl : "URL을 입력하면 파비콘이 자동 로드됩니다"}
+                    {isUrlValid && formattedUrl
+                      ? formattedUrl
+                      : "URL을 입력하면 파비콘이 자동 로드됩니다"}
                   </span>
                 </div>
               </div>
@@ -272,7 +383,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
             </Button>
             <Button
               type="submit"
-              disabled={!isFormValid}
+              disabled={!isValid || isSubmitting}
               className="rounded-xl font-medium"
             >
               링크 추가하기
