@@ -8,6 +8,7 @@ import {
   Plus,
   Globe,
   ArrowUpRight,
+  CircleNotch,
   LinkSimple,
   TextT,
   WarningCircle,
@@ -285,6 +286,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
               placeholder="예: 내 기술 블로그, GitHub, 포트폴리오"
               maxLength={50}
               autoFocus
+              disabled={isSubmitting}
               className={cn(
                 "h-10 rounded-xl bg-background/80 px-3 text-sm ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary",
                 errors.title && "ring-destructive focus-visible:ring-destructive"
@@ -312,6 +314,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
               id="link-url"
               type="text"
               placeholder="https://velog.io/@username 또는 naver.com"
+              disabled={isSubmitting}
               className={cn(
                 "h-10 rounded-xl bg-background/80 px-3 text-sm ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary",
                 errors.url && "ring-destructive focus-visible:ring-destructive"
@@ -391,9 +394,16 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
             <Button
               type="submit"
               disabled={!isValid || isSubmitting}
-              className="rounded-xl font-medium"
+              className="gap-1.5 rounded-xl font-medium"
             >
-              {isSubmitting ? "저장 중..." : "링크 추가하기"}
+              {isSubmitting ? (
+                <>
+                  <CircleNotch className="size-4 animate-spin" weight="bold" />
+                  <span>저장 및 갱신 중...</span>
+                </>
+              ) : (
+                <span>링크 추가하기</span>
+              )}
             </Button>
           </DialogFooter>
         </form>
