@@ -17,7 +17,7 @@ export default function HomePage() {
         {/* 프로필 헤더 */}
         <ProfileHeader />
 
-        {/* 링크 관리 및 목록 (다이얼로그 추가 기능 + 로컬 상태 관리) */}
+        {/* 링크 관리 및 목록 (다이얼로그 추가 기능 + Firebase Firestore 연동) */}
         <section aria-label="링크 목록" className="w-full">
           <LinkManager />
         </section>

@@ -27,7 +27,9 @@ import { getFaviconUrl, type LinkItem } from "@/data/links"
 import { cn } from "@/lib/utils"
 
 interface AddLinkDialogProps {
-  onAddLink: (link: Omit<LinkItem, "id" | "order" | "createdAt">) => void
+  onAddLink: (
+    link: Omit<LinkItem, "id" | "order" | "createdAt">
+  ) => Promise<void> | void
   trigger?: React.ReactNode
 }
 
@@ -215,18 +217,22 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
   }
 
   // 폼 제출 핸들러
-  const onSubmit = (data: LinkFormValues) => {
+  const onSubmit = async (data: LinkFormValues) => {
     const finalUrl = formatUrl(data.url)
-    onAddLink({
-      title: data.title.trim(),
-      url: finalUrl,
-      faviconUrl: previewFaviconUrl || getFaviconUrl(finalUrl),
-      isActive: true,
-    })
+    try {
+      await onAddLink({
+        title: data.title.trim(),
+        url: finalUrl,
+        faviconUrl: previewFaviconUrl || getFaviconUrl(finalUrl),
+        isActive: true,
+      })
 
-    setOpen(false)
-    reset()
-    setPreviewFaviconError(false)
+      setOpen(false)
+      reset()
+      setPreviewFaviconError(false)
+    } catch {
+      // 상위 컴포넌트(LinkManager)에서 에러 메시지 상태 처리
+    }
   }
 
   return (
@@ -376,6 +382,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmitting}
               onClick={() => handleOpenChange(false)}
               className="rounded-xl"
             >
@@ -386,7 +393,7 @@ export function AddLinkDialog({ onAddLink, trigger }: AddLinkDialogProps) {
               disabled={!isValid || isSubmitting}
               className="rounded-xl font-medium"
             >
-              링크 추가하기
+              {isSubmitting ? "저장 중..." : "링크 추가하기"}
             </Button>
           </DialogFooter>
         </form>
